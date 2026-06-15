@@ -1,54 +1,65 @@
-/**
- * ProxyWarp — Proxy Engine
- * Core request routing and HTML rewriting via puter.net.fetch()
- */
-
 'use strict';
 
-/* ─── Ad / Tracker Block List ─── */
+/* ─── Why some famous sites still block us ────────────────────────────────
+ * browser.js (HeyPuter) is a full service-worker proxy — it intercepts every
+ * sub-request (CSS, JS, XHR, images). We use puter.net.fetch() which only
+ * fetches the initial document; Puter's server IPs are also known data-center
+ * ranges some sites (Google, Cloudflare-protected) actively block.
+ * What we CAN fix: send a complete, realistic browser header set, follow
+ * redirects to the real final URL, rewrite meta-refresh, handle srcset, etc.
+ * ─────────────────────────────────────────────────────────────────────── */
+
+/* ─── Ad / Tracker domains ── */
 const AD_DOMAINS = new Set([
   'doubleclick.net','googleadservices.com','googlesyndication.com',
-  'adnxs.com','ads.yahoo.com','facebook.com/plugins','connect.facebook.net',
-  'scorecardresearch.com','omtrdc.net','quantserve.com','taboola.com',
-  'outbrain.com','revcontent.com','adroll.com','criteo.com','adsrvr.org',
-  'moatads.com','Amazon-adsystem.com','amazon-adsystem.com',
-  'pubmatic.com','openx.net','rubiconproject.com','appnexus.com',
-  'advertising.com','media.net','yieldmo.com','indexexchange.com',
-  'smartadserver.com','bing.com/ads','yahoo.com/ads','twitter.com/ads',
-  'pixel.facebook.com','analytics.google.com','google-analytics.com',
-  'hotjar.com','fullstory.com','segment.com','segment.io','mixpanel.com',
-  'amplitude.com','heap.io','mouseflow.com','clicktale.com',
+  'adnxs.com','connect.facebook.net','scorecardresearch.com','quantserve.com',
+  'taboola.com','outbrain.com','criteo.com','adsrvr.org','pubmatic.com',
+  'openx.net','rubiconproject.com','appnexus.com','media.net','yieldmo.com',
+  'indexexchange.com','smartadserver.com','amazon-adsystem.com','adroll.com',
+  'moatads.com','revcontent.com','advertising.com',
+  'google-analytics.com','analytics.google.com','hotjar.com','fullstory.com',
+  'segment.com','segment.io','mixpanel.com','amplitude.com','heap.io',
+  'mouseflow.com','clicktale.com','pixel.facebook.com',
 ]);
 
-/* ─── Spoofed User-Agent ─── */
-const SPOOFED_UA =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
-  'AppleWebKit/537.36 (KHTML, like Gecko) ' +
-  'Chrome/124.0.0.0 Safari/537.36';
+/* ─── Realistic browser headers sent with every request ── */
+const BROWSER_HEADERS = {
+  'Accept':           'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+  'Accept-Language':  'en-US,en;q=0.9',
+  'Accept-Encoding':  'gzip, deflate, br',
+  'Cache-Control':    'no-cache',
+  'Pragma':           'no-cache',
+  'Upgrade-Insecure-Requests': '1',
+  'Sec-Fetch-Dest':   'document',
+  'Sec-Fetch-Mode':   'navigate',
+  'Sec-Fetch-Site':   'none',
+  'Sec-Fetch-User':   '?1',
+  'DNT':              '1',
+};
 
-/* ─── Proxy State ─── */
+const SPOOFED_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36';
+
+/* ─── State ── */
 const ProxyEngine = {
   history: [],
   historyIndex: -1,
   currentUrl: null,
 
   getOptions() {
+    const g = id => document.getElementById(id)?.checked ?? false;
     return {
-      allowCookies:   document.getElementById('opt-cookies')?.checked  ?? false,
-      sendReferrer:   document.getElementById('opt-referrer')?.checked ?? false,
-      enableScripts:  document.getElementById('opt-scripts')?.checked  ?? true,
-      blockAds:       document.getElementById('opt-ads')?.checked      ?? false,
-      loadImages:     document.getElementById('opt-images')?.checked   ?? true,
-      spoofUA:        document.getElementById('opt-ua')?.checked       ?? false,
-      encodeUrl:      document.getElementById('opt-encode')?.checked   ?? false,
+      allowCookies:  g('opt-cookies'),
+      sendReferrer:  g('opt-referrer'),
+      enableScripts: document.getElementById('opt-scripts')?.checked ?? true,
+      blockAds:      g('opt-ads'),
+      loadImages:    document.getElementById('opt-images')?.checked ?? true,
+      spoofUA:       g('opt-ua'),
     };
   },
 
-  /** Push a URL into the internal history stack */
   pushHistory(url) {
-    if (this.historyIndex < this.history.length - 1) {
+    if (this.historyIndex < this.history.length - 1)
       this.history = this.history.slice(0, this.historyIndex + 1);
-    }
     this.history.push(url);
     this.historyIndex++;
     this.updateNavBtns();
@@ -69,24 +80,16 @@ const ProxyEngine = {
   },
 
   updateNavBtns() {
-    const back = document.getElementById('btn-back');
-    const fwd  = document.getElementById('btn-fwd');
-    if (back) back.disabled = this.historyIndex <= 0;
-    if (fwd)  fwd.disabled  = this.historyIndex >= this.history.length - 1;
+    const b = document.getElementById('btn-back');
+    const f = document.getElementById('btn-fwd');
+    if (b) b.disabled = this.historyIndex <= 0;
+    if (f) f.disabled = this.historyIndex >= this.history.length - 1;
   },
 
-  /** Main navigate method */
   async navigate(rawUrl, addToHistory = true) {
     let url = rawUrl.trim();
     if (!url) return;
-
-    // Decode if it came from a Base64 encoded parameter
-    try {
-      const decoded = atob(url);
-      if (decoded.startsWith('http')) url = decoded;
-    } catch (_) { /* not base64 */ }
-
-    // Ensure protocol
+    try { const d = atob(url); if (d.startsWith('http')) url = d; } catch(_) {}
     if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
 
     this.currentUrl = url;
@@ -97,34 +100,36 @@ const ProxyEngine = {
     ProxyUI.startProgress();
 
     try {
-      const html = await this.fetchViaProxy(url);
-      const rewritten = this.rewriteHtml(html, url);
-      this.renderContent(rewritten, url);
+      const { html, finalUrl } = await this.fetchViaProxy(url);
+      if (finalUrl && finalUrl !== url) {
+        this.currentUrl = finalUrl;
+        ProxyUI.updateAddr(finalUrl);
+        if (addToHistory) this.pushHistory(finalUrl);
+      }
+      const rewritten = this.rewriteHtml(html, finalUrl || url);
+      this.renderContent(rewritten);
       ProxyUI.setLoading(false);
       ProxyUI.stopProgress();
     } catch (err) {
-      console.error('[ProxyWarp] Fetch error:', err);
+      console.error('[ProxyWarp]', err);
       ProxyUI.setLoading(false);
       ProxyUI.stopProgress();
       ProxyUI.showError(url, err.message);
     }
   },
 
-  /** Fetch a URL through puter.net.fetch() — routes via Puter's cloud servers */
   async fetchViaProxy(url) {
     const opts = this.getOptions();
-    const headers = {};
 
-    if (!opts.sendReferrer) {
-      headers['Referer'] = '';
+    const headers = {
+      ...BROWSER_HEADERS,
+      'User-Agent': opts.spoofUA ? SPOOFED_UA : SPOOFED_UA, // always send realistic UA
+    };
+
+    if (opts.sendReferrer) {
+      try { headers['Referer'] = new URL(url).origin; } catch(_) {}
     }
 
-    if (opts.spoofUA) {
-      headers['User-Agent'] = SPOOFED_UA;
-    }
-
-    // Use puter.net.fetch for CORS-free, proxy-routed requests
-    // This routes through Puter's cloud infrastructure — masking the client IP
     const response = await puter.net.fetch(url, {
       method: 'GET',
       headers,
@@ -132,254 +137,218 @@ const ProxyEngine = {
       redirect: 'follow',
     });
 
+    /* Track the final URL after redirect chain */
+    const finalUrl = response.url && response.url !== url ? response.url : url;
+
     if (!response.ok && response.status !== 304) {
-      // Still try to get body even for error responses
       const text = await response.text().catch(() => '');
-      if (!text) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      return text;
+      if (!text) throw new Error(`HTTP ${response.status} from ${new URL(url).hostname}. This site may actively block proxy access.`);
+      return { html: text, finalUrl };
     }
 
-    return await response.text();
+    const html = await response.text();
+    return { html, finalUrl };
   },
 
-  /** Rewrite all URLs in HTML so navigation stays within the proxy */
   rewriteHtml(html, baseUrl) {
     const opts = this.getOptions();
-
     try {
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
 
-      // Inject proxy base meta (prevents relative URL breakage)
-      const base = doc.querySelector('base') || doc.createElement('base');
+      /* Remove security headers that break rendering in iframe */
+      doc.querySelectorAll(
+        'meta[http-equiv="Content-Security-Policy"],' +
+        'meta[http-equiv="X-Frame-Options"],' +
+        'meta[http-equiv="X-Content-Type-Options"]'
+      ).forEach(m => m.remove());
+
+      /* Handle <meta http-equiv="refresh"> redirects */
+      doc.querySelectorAll('meta[http-equiv="refresh"]').forEach(m => {
+        const content = m.getAttribute('content') || '';
+        const match = content.match(/url=(.+)/i);
+        if (match) {
+          try {
+            const target = new URL(match[1].replace(/['";]/g, '').trim(), baseUrl).href;
+            m.setAttribute('content', `0;url=proxy.html?url=${encodeURIComponent(target)}`);
+          } catch(_) {}
+        }
+      });
+
+      /* Set a <base> so relative resources load from the right origin */
+      let base = doc.querySelector('base');
+      if (!base) { base = doc.createElement('base'); doc.head.prepend(base); }
       base.href = baseUrl;
-      doc.head.insertBefore(base, doc.head.firstChild);
 
-      // Remove CSP meta tags that would block our rewriting
-      doc.querySelectorAll('meta[http-equiv="Content-Security-Policy"]').forEach(m => m.remove());
-      doc.querySelectorAll('meta[http-equiv="X-Frame-Options"]').forEach(m => m.remove());
+      /* Inject interceptor before anything else runs */
+      const s = doc.createElement('script');
+      s.textContent = this.interceptorScript(baseUrl);
+      doc.head.prepend(s);
 
-      // Inject our proxy navigation interceptor script
-      const interceptScript = doc.createElement('script');
-      interceptScript.textContent = this.buildInterceptorScript(baseUrl);
-      doc.head.appendChild(interceptScript);
-
-      // Rewrite <a href>
+      /* Rewrite <a href> */
       doc.querySelectorAll('a[href]').forEach(a => {
-        const href = a.getAttribute('href');
-        const rewritten = this.rewriteAttrUrl(href, baseUrl);
-        if (rewritten) a.setAttribute('href', rewritten);
+        const rw = this.toProxyUrl(a.getAttribute('href'), baseUrl);
+        if (rw) a.setAttribute('href', rw);
+        a.setAttribute('target', '_self'); // keep inside proxy frame
       });
 
-      // Rewrite <form action>
-      doc.querySelectorAll('form[action]').forEach(form => {
-        const action = form.getAttribute('action');
-        const rewritten = this.rewriteAttrUrl(action, baseUrl);
-        if (rewritten) form.setAttribute('action', rewritten);
+      /* Rewrite <form action> */
+      doc.querySelectorAll('form[action]').forEach(f => {
+        const rw = this.toProxyUrl(f.getAttribute('action'), baseUrl);
+        if (rw) f.setAttribute('action', rw);
       });
 
-      // Rewrite <img src> if images enabled
+      /* Rewrite <img src> + srcset */
       if (!opts.loadImages) {
-        doc.querySelectorAll('img').forEach(img => img.remove());
+        doc.querySelectorAll('img,picture,source').forEach(el => el.remove());
       } else {
         doc.querySelectorAll('img[src]').forEach(img => {
           const src = img.getAttribute('src');
-          if (src && !src.startsWith('data:')) {
-            try {
-              img.setAttribute('src', new URL(src, baseUrl).href);
-            } catch (_) {}
-          }
+          if (src && !src.startsWith('data:'))
+            try { img.setAttribute('src', new URL(src, baseUrl).href); } catch(_) {}
+        });
+        doc.querySelectorAll('[srcset]').forEach(el => {
+          el.setAttribute('srcset', this.rewriteSrcset(el.getAttribute('srcset'), baseUrl));
         });
       }
 
-      // Block ads/trackers
-      if (opts.blockAds) {
-        this.removeAdElements(doc, baseUrl);
-      }
-
-      // Remove scripts if disabled
-      if (!opts.enableScripts) {
-        doc.querySelectorAll('script').forEach(s => s.remove());
-        doc.querySelectorAll('[onload],[onclick],[onmouseover],[onerror]').forEach(el => {
-          ['onload','onclick','onmouseover','onerror','onsubmit','onfocus','onblur'].forEach(attr => {
-            el.removeAttribute(attr);
-          });
-        });
-      }
-
-      // Rewrite stylesheet links to absolute
-      doc.querySelectorAll('link[rel="stylesheet"][href]').forEach(link => {
-        try {
-          link.href = new URL(link.getAttribute('href'), baseUrl).href;
-        } catch (_) {}
+      /* Rewrite stylesheet <link href> to absolute */
+      doc.querySelectorAll('link[rel="stylesheet"][href], link[rel="preload"][href]').forEach(l => {
+        try { l.setAttribute('href', new URL(l.getAttribute('href'), baseUrl).href); } catch(_) {}
       });
 
-      // Fix script srcs to absolute
+      /* Rewrite <script src> to absolute; optionally remove */
       doc.querySelectorAll('script[src]').forEach(s => {
         try {
-          const absUrl = new URL(s.getAttribute('src'), baseUrl).href;
-          if (opts.blockAds && this.isAdUrl(absUrl)) {
-            s.remove();
-          } else {
-            s.setAttribute('src', absUrl);
-          }
-        } catch (_) {}
+          const abs = new URL(s.getAttribute('src'), baseUrl).href;
+          if (opts.blockAds && this.isAdUrl(abs)) { s.remove(); return; }
+          if (!opts.enableScripts) { s.remove(); return; }
+          s.setAttribute('src', abs);
+        } catch(_) {}
       });
 
-      return doc.documentElement.outerHTML;
+      /* Remove inline scripts if JS disabled */
+      if (!opts.enableScripts) {
+        doc.querySelectorAll('script:not([src])').forEach(s => s.remove());
+        doc.querySelectorAll('[onload],[onclick],[onerror],[onsubmit]').forEach(el => {
+          ['onload','onclick','onerror','onsubmit','onfocus','onblur','onmouseover'].forEach(attr => el.removeAttribute(attr));
+        });
+      }
 
-    } catch (err) {
-      // Fallback: raw regex rewriting if DOM parsing fails
-      console.warn('[ProxyWarp] DOM rewrite failed, using regex fallback:', err);
-      return this.regexRewriteHtml(html, baseUrl, opts);
+      /* Remove <video>/<audio> src to absolute */
+      doc.querySelectorAll('video[src], audio[src], source[src]').forEach(el => {
+        try { el.setAttribute('src', new URL(el.getAttribute('src'), baseUrl).href); } catch(_) {}
+      });
+
+      /* Ad blocking */
+      if (opts.blockAds) this.removeAds(doc);
+
+      return doc.documentElement.outerHTML;
+    } catch(e) {
+      console.warn('[ProxyWarp] DOM rewrite failed, regex fallback:', e);
+      return this.regexRewrite(html, baseUrl, opts);
     }
   },
 
-  rewriteAttrUrl(href, baseUrl) {
+  toProxyUrl(href, base) {
     if (!href) return null;
-    if (href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) {
-      return null;
-    }
+    const skip = ['#','javascript:','mailto:','tel:','data:','blob:'];
+    if (skip.some(p => href.startsWith(p))) return null;
     try {
-      const abs = new URL(href, baseUrl).href;
-      return `proxy.html?url=${encodeURIComponent(abs)}`;
-    } catch (_) {
-      return null;
-    }
+      return `proxy.html?url=${encodeURIComponent(new URL(href, base).href)}`;
+    } catch(_) { return null; }
+  },
+
+  rewriteSrcset(srcset, base) {
+    return srcset.replace(/([^\s,]+)(\s+[\d.]+[wx])?/g, (match, url, descriptor) => {
+      try {
+        return new URL(url, base).href + (descriptor || '');
+      } catch(_) { return match; }
+    });
   },
 
   isAdUrl(url) {
     try {
-      const hostname = new URL(url).hostname;
-      for (const ad of AD_DOMAINS) {
-        if (hostname.includes(ad)) return true;
-      }
-    } catch (_) {}
+      const host = new URL(url).hostname;
+      for (const d of AD_DOMAINS) if (host.includes(d)) return true;
+    } catch(_) {}
     return false;
   },
 
-  removeAdElements(doc, baseUrl) {
-    // Remove known ad/tracker scripts by domain
-    doc.querySelectorAll('script[src], link[href], iframe[src], img[src]').forEach(el => {
+  removeAds(doc) {
+    doc.querySelectorAll('script[src],link[href],iframe[src],img[src]').forEach(el => {
       const src = el.src || el.href || el.getAttribute('src') || el.getAttribute('href') || '';
       if (this.isAdUrl(src)) el.remove();
     });
-
-    // Remove common ad container class names / ids
-    const AD_SELECTORS = [
-      '.ad', '.ads', '.advert', '.advertisement', '.ad-container', '.ad-wrapper',
-      '#ad', '#ads', '#advert', '#advertisement',
-      '[class*="adsbygoogle"]', '[id*="google_ads"]',
-      '.sponsored', '.promo-block', '.banner-ad',
-    ];
-    try {
-      doc.querySelectorAll(AD_SELECTORS.join(',')).forEach(el => el.remove());
-    } catch (_) {}
+    const SEL = '.ad,.ads,.advert,.advertisement,.ad-container,.ad-slot,.ad-banner,' +
+      '[class*="adsbygoogle"],[id*="google_ads"],.sponsored,.promo-block';
+    try { doc.querySelectorAll(SEL).forEach(el => el.remove()); } catch(_) {}
   },
 
-  /** Builds a script injected into proxied pages that intercepts link clicks */
-  buildInterceptorScript(baseUrl) {
-    return `
-(function() {
-  const PROXY_BASE = '${location.origin}${location.pathname.replace('proxy.html', '')}proxy.html';
-  const PAGE_BASE  = '${baseUrl}';
-
-  function toProxyUrl(href) {
-    if (!href || href.startsWith('#') || href.startsWith('javascript:') ||
-        href.startsWith('mailto:') || href.startsWith('tel:')) return null;
-    try {
-      const abs = new URL(href, PAGE_BASE).href;
-      return PROXY_BASE + '?url=' + encodeURIComponent(abs);
-    } catch(_) { return null; }
+  /* Injected into every proxied page — intercepts navigation before it escapes */
+  interceptorScript(baseUrl) {
+    return `(function(){
+  var BASE='${baseUrl}',
+      PROXY=location.origin+'/proxy.html';
+  function toProxy(href){
+    if(!href||/^(#|javascript:|mailto:|tel:|data:|blob:)/.test(href))return null;
+    try{return PROXY+'?url='+encodeURIComponent(new URL(href,BASE).href);}catch(e){return null;}
   }
-
-  // Intercept all link clicks
-  document.addEventListener('click', function(e) {
-    const a = e.target.closest('a[href]');
-    if (!a) return;
-    const proxied = toProxyUrl(a.getAttribute('href'));
-    if (proxied) {
-      e.preventDefault();
-      window.parent.postMessage({ type: 'proxywarp-navigate', url: a.href }, '*');
-    }
-  }, true);
-
-  // Intercept form submissions
-  document.addEventListener('submit', function(e) {
-    const form = e.target;
-    if (!form.action) return;
-    const proxied = toProxyUrl(form.action);
-    if (proxied) {
-      e.preventDefault();
-      window.parent.postMessage({ type: 'proxywarp-navigate', url: new URL(form.action, PAGE_BASE).href }, '*');
-    }
-  }, true);
-
-  // Override window.location
-  try {
-    Object.defineProperty(window, 'location', {
-      get: function() { return { href: PAGE_BASE, assign: function(u) { window.parent.postMessage({ type: 'proxywarp-navigate', url: u }, '*'); } }; }
-    });
-  } catch(_) {}
-})();
-    `;
+  /* Intercept clicks */
+  document.addEventListener('click',function(e){
+    var a=e.target.closest('a[href]');
+    if(!a)return;
+    var p=toProxy(a.getAttribute('href'));
+    if(p){e.preventDefault();e.stopPropagation();window.parent.postMessage({pw:'nav',url:new URL(a.getAttribute('href'),BASE).href},'*');}
+  },true);
+  /* Intercept form submits */
+  document.addEventListener('submit',function(e){
+    var f=e.target;
+    if(!f.action)return;
+    var p=toProxy(f.action);
+    if(p){e.preventDefault();window.parent.postMessage({pw:'nav',url:new URL(f.action,BASE).href},'*');}
+  },true);
+  /* Intercept history pushState / replaceState */
+  var orig={push:history.pushState,replace:history.replaceState};
+  history.pushState=function(a,b,url){
+    orig.push.apply(this,arguments);
+    if(url)window.parent.postMessage({pw:'nav',url:new URL(url,BASE).href},'*');
+  };
+  history.replaceState=function(a,b,url){
+    orig.replace.apply(this,arguments);
+  };
+})();`;
   },
 
-  /** Regex-based HTML rewriter (fallback) */
-  regexRewriteHtml(html, baseUrl, opts) {
-    // Remove CSP headers from meta
-    html = html.replace(/<meta[^>]+http-equiv=["']Content-Security-Policy["'][^>]*>/gi, '');
-
-    // Rewrite href attributes
-    html = html.replace(/\shref=["']([^"']+)["']/gi, (match, url) => {
-      if (url.startsWith('#') || url.startsWith('javascript:') || url.startsWith('mailto:')) return match;
-      try {
-        const abs = new URL(url, baseUrl).href;
-        return ` href="proxy.html?url=${encodeURIComponent(abs)}"`;
-      } catch(_) { return match; }
+  regexRewrite(html, baseUrl, opts) {
+    html = html.replace(/<meta[^>]+http-equiv=["']Content-Security-Policy["'][^>]*>/gi,'');
+    html = html.replace(/\shref=(["'])([^"']+)\1/gi,(_,q,u)=>{
+      if(/^(#|javascript:|mailto:|tel:)/.test(u)) return ` href=${q}${u}${q}`;
+      try{ return ` href=${q}proxy.html?url=${encodeURIComponent(new URL(u,baseUrl).href)}${q}`; }
+      catch(_){ return ` href=${q}${u}${q}`; }
     });
-
-    // Rewrite form actions
-    html = html.replace(/\saction=["']([^"']+)["']/gi, (match, url) => {
-      if (url.startsWith('#')) return match;
-      try {
-        const abs = new URL(url, baseUrl).href;
-        return ` action="proxy.html?url=${encodeURIComponent(abs)}"`;
-      } catch(_) { return match; }
+    html = html.replace(/\saction=(["'])([^"']+)\1/gi,(_,q,u)=>{
+      try{ return ` action=${q}proxy.html?url=${encodeURIComponent(new URL(u,baseUrl).href)}${q}`; }
+      catch(_){ return ` action=${q}${u}${q}`; }
     });
-
-    if (!opts.enableScripts) {
-      html = html.replace(/<script[\s\S]*?<\/script>/gi, '');
-    }
-
+    if(!opts.enableScripts) html = html.replace(/<script[\s\S]*?<\/script>/gi,'');
     return html;
   },
 
-  /** Render the proxied HTML into the page */
-  renderContent(html, baseUrl) {
+  renderContent(html) {
     const frame = document.getElementById('proxy-frame');
-    const blob = new Blob([html], { type: 'text/html' });
-    const blobUrl = URL.createObjectURL(blob);
-
-    // Clean up old blob URL
     if (frame._blobUrl) URL.revokeObjectURL(frame._blobUrl);
-    frame._blobUrl = blobUrl;
-
+    const blob = new Blob([html], { type: 'text/html' });
+    frame._blobUrl = URL.createObjectURL(blob);
     frame.style.display = 'block';
-    frame.src = blobUrl;
-
-    const newtab = document.getElementById('newtab');
-    const loading = document.getElementById('loading');
-    const errScr  = document.getElementById('err-screen');
-    if (newtab)  newtab.style.display  = 'none';
-    if (loading) loading.style.display = 'none';
-    if (errScr)  errScr.style.display  = 'none';
+    frame.src = frame._blobUrl;
+    ['newtab','loading','err-screen'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
   },
 };
 
-// Listen for navigation messages from inside the iframe
-window.addEventListener('message', (e) => {
-  if (e.data?.type === 'proxywarp-navigate') {
-    ProxyEngine.navigate(e.data.url);
-  }
+window.addEventListener('message', e => {
+  if (e.data?.pw === 'nav') ProxyEngine.navigate(e.data.url);
 });
