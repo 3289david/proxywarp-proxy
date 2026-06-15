@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProxyWarp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://js.puter.com/v2/"></script>
+</head>
+<body class="proxy-page">
+
+<!-- ── Chrome ── -->
+<div class="chrome">
+
+  <a href="index.html" class="chrome-brand" title="Home">
+    <svg width="13" height="13" viewBox="0 0 18 18" fill="none">
+      <path d="M9 1L2 6v6l7 5 7-5V6L9 1z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M9 5v8M5.5 7l3.5 2 3.5-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    ProxyWarp
+  </a>
+
+  <div class="chrome-divider"></div>
+
+  <div class="nav-btns">
+    <button class="nb" id="btn-back" onclick="histBack()" title="Back" disabled>
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+        <path d="M9 3L5 7l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <button class="nb" id="btn-fwd" onclick="histForward()" title="Forward" disabled>
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+        <path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <button class="nb" id="btn-refresh" onclick="doRefresh()" title="Reload">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none" id="icon-refresh">
+        <path d="M11 7A4 4 0 113.5 3.8M3.5 7V3.5H7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="addr">
+    <span class="addr-lock" id="addr-lock">
+      <svg width="11" height="11" viewBox="0 0 13 13" fill="none">
+        <rect x="2.5" y="5.5" width="8" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/>
+        <path d="M4.5 5.5V4a2 2 0 014 0v1.5" stroke="currentColor" stroke-width="1.2"/>
+      </svg>
+    </span>
+    <input
+      type="text"
+      id="addr-input"
+      class="addr-input"
+      placeholder="Search or enter URL..."
+      autocomplete="off"
+      spellcheck="false"
+      onkeydown="if(event.key==='Enter') navigateTo()"
+    />
+    <button class="addr-go" onclick="navigateTo()" title="Go">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+        <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="chrome-right">
+    <button class="new-tab-btn" onclick="showNewTab()" title="New tab">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+        <path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    <button class="opts-toggle" id="btn-opts" onclick="toggleOpts()">
+      <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+        <circle cx="7" cy="7" r="1.8" stroke="currentColor" stroke-width="1.2"/>
+        <path d="M7 1.5V3M7 11v1.5M1.5 7H3M11 7h1.5M2.9 2.9l1.1 1.1M10 10l1.1 1.1M11.1 2.9L10 4M4 10l-1.1 1.1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      <span>Options</span>
+    </button>
+
+    <div class="status-pill" id="status-pill">
+      <span class="dot dot-green"></span>
+      <span id="status-label">Protected</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Options drawer ── -->
+<div class="opts-drawer" id="opts-drawer">
+  <div class="opts-group">
+    <div class="opts-label">Privacy</div>
+    <label class="toggle-wrap">
+      <span class="toggle"><input type="checkbox" id="opt-cookies"/><span class="t-track"></span></span>
+      Allow cookies
+    </label>
+    <label class="toggle-wrap">
+      <span class="toggle"><input type="checkbox" id="opt-referrer"/><span class="t-track"></span></span>
+      Send referrer
+    </label>
+  </div>
+  <div class="opts-group">
+    <div class="opts-label">Content</div>
+    <label class="toggle-wrap">
+      <span class="toggle"><input type="checkbox" id="opt-scripts" checked/><span class="t-track"></span></span>
+      Enable scripts
+    </label>
+    <label class="toggle-wrap">
+      <span class="toggle"><input type="checkbox" id="opt-ads"/><span class="t-track"></span></span>
+      Block ads
+    </label>
+    <label class="toggle-wrap">
+      <span class="toggle"><input type="checkbox" id="opt-images" checked/><span class="t-track"></span></span>
+      Load images
+    </label>
+  </div>
+  <div class="opts-group">
+    <div class="opts-label">Identity</div>
+    <label class="toggle-wrap">
+      <span class="toggle"><input type="checkbox" id="opt-ua"/><span class="t-track"></span></span>
+      Spoof user-agent
+    </label>
+    <label class="toggle-wrap">
+      <span class="toggle"><input type="checkbox" id="opt-encode"/><span class="t-track"></span></span>
+      Encrypt URL
+    </label>
+  </div>
+  <div class="opts-group">
+    <div class="opts-label">Cloud</div>
+    <button class="opts-action" onclick="savePrefs()">Save to Puter cloud</button>
+    <button class="opts-action" onclick="clearHist()">Clear history</button>
+  </div>
+</div>
+
+<!-- ── Main ── -->
+<div class="proxy-main">
+
+  <!-- New tab / search -->
+  <div class="newtab" id="newtab">
+    <div class="newtab-time" id="nt-time">00:00</div>
+    <div class="newtab-date" id="nt-date"></div>
+
+    <form class="newtab-search" onsubmit="ntSearch(event)">
+      <span class="newtab-search-icon">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <input
+        type="text"
+        id="nt-input"
+        class="newtab-input"
+        placeholder="Search or enter a URL..."
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button type="submit" class="newtab-go">
+        Go
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+          <path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </form>
+
+    <div class="newtab-quick">
+      <button class="nq-btn" onclick="ntNav('https://duckduckgo.com')">DuckDuckGo</button>
+      <button class="nq-btn" onclick="ntNav('https://wikipedia.org')">Wikipedia</button>
+      <button class="nq-btn" onclick="ntNav('https://reddit.com')">Reddit</button>
+      <button class="nq-btn" onclick="ntNav('https://news.ycombinator.com')">Hacker News</button>
+      <button class="nq-btn" onclick="ntNav('https://github.com')">GitHub</button>
+    </div>
+
+    <div class="newtab-footer">
+      <span class="dot dot-dim"></span>
+      IP hidden
+      <span class="newtab-sep">·</span>
+      No logs
+      <span class="newtab-sep">·</span>
+      <a href="https://puter.com" target="_blank" rel="noopener" style="color:var(--text-3);text-decoration:none">Puter</a>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="overlay" id="loading" style="display:none">
+    <div class="spinner"></div>
+    <div class="load-text" id="load-text">Fetching...</div>
+    <div class="load-sub">Routed via Puter — IP hidden</div>
+  </div>
+
+  <!-- Error -->
+  <div class="overlay" id="err-screen" style="display:none">
+    <div class="err-title" id="err-title">Could not load page</div>
+    <div class="err-msg"   id="err-msg"></div>
+    <div class="err-btns">
+      <button class="btn" onclick="doRefresh()">Retry</button>
+      <button class="btn" onclick="showNewTab()">New tab</button>
+    </div>
+  </div>
+
+  <!-- Proxy iframe -->
+  <iframe
+    id="proxy-frame"
+    class="proxy-frame"
+    sandbox="allow-same-origin allow-forms allow-popups allow-scripts allow-downloads"
+    referrerpolicy="no-referrer"
+    title="ProxyWarp"
+  ></iframe>
+
+</div>
+
+<!-- ── Status bar ── -->
+<div class="status-bar">
+  <div class="sb-l">
+    <span id="sb-domain">New tab</span>
+  </div>
+  <div class="sb-r">
+    <span class="sb-puter">
+      <svg width="10" height="10" viewBox="0 0 18 18" fill="none">
+        <path d="M9 1L2 6v6l7 5 7-5V6L9 1z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
+      <span id="sb-user">Puter</span>
+    </span>
+    <span id="sb-time"></span>
+  </div>
+</div>
+
+<script src="js/proxy-engine.js"></script>
+<script src="js/proxy-ui.js"></script>
+</body>
+</html>
