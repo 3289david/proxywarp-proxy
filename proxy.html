@@ -411,6 +411,11 @@ document.getElementById('addr-input').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') navigateTo(this.value);
 });
 
+// ── Service worker ─────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function(){});
+}
+
 // ── Initial load ───────────────────────────────────────────────────
 var initUrl = new URLSearchParams(location.search).get('url');
 if (initUrl) {
