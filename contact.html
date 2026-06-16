@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact — ProxyWarp</title>
+  <meta name="description" content="Get in touch with the ProxyWarp team." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    .contact-hero { text-align: center; padding: 36px 0 36px; }
+    .contact-hero h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.025em; margin-bottom: 10px; }
+    .contact-hero p  { font-size: 14px; color: var(--text-2); max-width: 380px; margin: 0 auto; line-height: 1.6; }
+
+    .contact-channels {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 10px;
+      margin: 8px 0 28px;
+    }
+    .channel-card {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 16px;
+      transition: border-color 0.15s;
+    }
+    .channel-card:hover { border-color: var(--border-hi); }
+    .channel-icon {
+      width: 20px; height: 20px; margin-bottom: 10px; display: block;
+      color: var(--text-2);
+    }
+    .channel-title  { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .channel-email  { font-size: 12px; color: var(--text-2); }
+    .channel-email a { color: var(--text-2); text-decoration: underline; text-underline-offset: 2px; }
+    .channel-email a:hover { color: var(--text); }
+    .channel-desc   { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+
+    .contact-form-wrap {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 26px 24px;
+      margin: 0 0 28px;
+    }
+    .contact-form-wrap h3 { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 18px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-full { grid-column: 1 / -1; }
+    .form-row  { display: flex; flex-direction: column; gap: 5px; }
+    .form-label { font-size: 11px; color: var(--text-3); }
+    .form-input, .form-select, .form-textarea {
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 13px;
+      font-family: var(--font);
+      padding: 9px 12px;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--border-hi); }
+    .form-textarea { min-height: 110px; resize: vertical; line-height: 1.5; }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--text-3); }
+    .form-select option { background: #111; }
+    .form-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 10px; margin-top: 4px;
+    }
+    .form-note { font-size: 11px; color: var(--text-3); }
+    .form-submit {
+      padding: 9px 22px;
+      background: var(--text); color: #080808;
+      border: none; border-radius: var(--radius);
+      font-size: 13px; font-weight: 600; font-family: var(--font);
+      cursor: pointer; transition: opacity 0.15s;
+    }
+    .form-submit:hover { opacity: 0.85; }
+
+    .faq-list { display: flex; flex-direction: column; gap: 0; margin: 12px 0; }
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+      padding: 14px 0;
+    }
+    .faq-item:last-child { border-bottom: none; }
+    .faq-q { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 5px; cursor: pointer; }
+    .faq-a { font-size: 12px; color: var(--text-3); line-height: 1.6; }
+
+    @media (max-width: 500px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="legal-page">
+
+<nav class="legal-nav">
+  <a href="/" class="legal-nav-brand">
+    <svg width="13" height="13" viewBox="0 0 18 18" fill="none">
+      <path d="M9 1L2 6v6l7 5 7-5V6L9 1z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M9 5v8M5.5 7l3.5 2 3.5-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    ProxyWarp
+  </a>
+  <div class="legal-nav-links">
+    <a href="/">Home</a>
+    <a href="about.html">About</a>
+    <a href="donate.html">Donate</a>
+  </div>
+</nav>
+
+<div class="legal-body">
+
+  <div class="contact-hero">
+    <h1>Get in Touch</h1>
+    <p>Questions, bug reports, or just want to say hi? We usually respond within 48 hours.</p>
+  </div>
+
+  <div class="contact-channels">
+    <div class="channel-card">
+      <span class="channel-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 3H3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h3v3l4-3h7a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1z"/>
+        </svg>
+      </span>
+      <div class="channel-title">General &amp; Support</div>
+      <div class="channel-email"><a href="mailto:contact@rukkit.net">contact@rukkit.net</a></div>
+      <div class="channel-desc">Bug reports, questions, feedback</div>
+    </div>
+    <div class="channel-card">
+      <span class="channel-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 2L2 6v4c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/>
+        </svg>
+      </span>
+      <div class="channel-title">Legal &amp; DMCA</div>
+      <div class="channel-email"><a href="mailto:contact@rukkit.net">contact@rukkit.net</a></div>
+      <div class="channel-desc">Takedown requests, legal notices</div>
+    </div>
+    <div class="channel-card">
+      <span class="channel-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 10c0 2.2 1.8 4 4 4s4-1.8 4-4-1.8-4-4-4"/>
+          <path d="M2 10h2M16 10h2M10 2v2M10 16v2"/>
+          <circle cx="10" cy="10" r="2"/>
+        </svg>
+      </span>
+      <div class="channel-title">Business</div>
+      <div class="channel-email"><a href="mailto:contact@rukkit.net">contact@rukkit.net</a></div>
+      <div class="channel-desc">Sponsorships, partnerships</div>
+    </div>
+  </div>
+
+  <div class="contact-form-wrap">
+    <h3>Send a Message</h3>
+    <form id="contact-form">
+      <div class="form-grid">
+        <div class="form-row">
+          <label class="form-label" for="c-name">Your Name</label>
+          <input class="form-input" id="c-name" type="text" placeholder="John Doe" autocomplete="name" />
+        </div>
+        <div class="form-row">
+          <label class="form-label" for="c-email">Email Address <span style="color:#e57">*</span></label>
+          <input class="form-input" id="c-email" type="email" placeholder="you@example.com" autocomplete="email" required />
+        </div>
+        <div class="form-row">
+          <label class="form-label" for="c-type">Topic</label>
+          <select class="form-select" id="c-type">
+            <option value="General">General question</option>
+            <option value="Bug report">Bug report</option>
+            <option value="Feature request">Feature request</option>
+            <option value="DMCA / Legal">DMCA / Legal</option>
+            <option value="Business">Business / Sponsorship</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label class="form-label" for="c-subject">Subject</label>
+          <input class="form-input" id="c-subject" type="text" placeholder="Brief summary…" />
+        </div>
+        <div class="form-row form-full">
+          <label class="form-label" for="c-message">Message <span style="color:#e57">*</span></label>
+          <textarea class="form-textarea" id="c-message" placeholder="Describe your issue or question in detail…" required></textarea>
+        </div>
+      </div>
+      <div class="form-footer" style="margin-top:16px">
+        <span class="form-note">Replies sent to your email within 48 hours</span>
+        <button class="form-submit" type="submit">Send Message →</button>
+      </div>
+    </form>
+  </div>
+
+  <h2>Frequently Asked Questions</h2>
+  <div class="faq-list">
+    <div class="faq-item">
+      <div class="faq-q">Is ProxyWarp really free?</div>
+      <div class="faq-a">Yes, completely. No ads, no account required, no paywalls. We're kept alive by <a href="donate.html" style="color:var(--text-2)">generous donations</a>.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Do you log my browsing activity?</div>
+      <div class="faq-a">No. We do not store browsing history, IP addresses, or any data about what you access. See our <a href="legal/privacy.html" style="color:var(--text-2)">Privacy Policy</a>.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Why doesn't a specific site work?</div>
+      <div class="faq-a">Some sites block all known proxy IPs, or require login that can't be proxied. Email us with the site URL and we'll look into it.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">How do I submit a DMCA takedown?</div>
+      <div class="faq-a">Email contact@rukkit.net with "DMCA" in the subject line. Include the URL, a description of the content, and proof of ownership. See our <a href="legal/dmca.html" style="color:var(--text-2)">DMCA Policy</a>.</div>
+    </div>
+  </div>
+
+</div>
+
+<footer class="legal-footer">
+  <span style="display:flex;align-items:center;gap:6px">
+    <span class="dot dot-green"></span>
+    <span>proxywarp.com</span>
+  </span>
+  <div class="flinks">
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+    <a href="donate.html">Donate</a>
+    <a href="legal/terms.html">Terms</a>
+    <a href="legal/privacy.html">Privacy</a>
+    <a href="legal/dmca.html">DMCA</a>
+  </div>
+</footer>
+
+<script>
+document.getElementById('contact-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var name    = document.getElementById('c-name').value.trim();
+  var email   = document.getElementById('c-email').value.trim();
+  var type    = document.getElementById('c-type').value;
+  var subject = document.getElementById('c-subject').value.trim() || type;
+  var message = document.getElementById('c-message').value.trim();
+  if (!email || !message) { alert('Please fill in your email and message.'); return; }
+  var body = 'Name: ' + (name || 'Not provided') + '\nType: ' + type + '\n\n' + message;
+  window.location.href = 'mailto:contact@rukkit.net?subject=' + encodeURIComponent('[ProxyWarp] ' + subject) + '&body=' + encodeURIComponent(body);
+});
+</script>
+
+</body>
+</html>

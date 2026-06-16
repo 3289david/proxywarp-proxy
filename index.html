@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ProxyWarp</title>
-  <meta name="description" content="Free anonymous web proxy. No logs. Powered by Puter." />
+  <meta name="description" content="Free anonymous web proxy. No logs." />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
@@ -24,7 +24,7 @@
     ProxyWarp
   </div>
 
-  <form onsubmit="go(event)" class="home-input-group">
+  <form id="main-form" class="home-input-group">
     <div class="home-bar">
       <span class="home-bar-icon">
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
@@ -36,7 +36,7 @@
         id="url"
         type="text"
         class="home-url"
-        placeholder="Enter a URL or search..."
+        placeholder="Enter a URL or search…"
         autocomplete="off"
         spellcheck="false"
         autofocus
@@ -48,25 +48,6 @@
         </svg>
       </button>
     </div>
-
-    <div class="home-opts">
-      <label class="toggle-wrap">
-        <span class="toggle"><input type="checkbox" id="opt-cookies"/><span class="t-track"></span></span>
-        Cookies
-      </label>
-      <label class="toggle-wrap">
-        <span class="toggle"><input type="checkbox" id="opt-scripts" checked/><span class="t-track"></span></span>
-        Scripts
-      </label>
-      <label class="toggle-wrap">
-        <span class="toggle"><input type="checkbox" id="opt-ads"/><span class="t-track"></span></span>
-        Block ads
-      </label>
-      <label class="toggle-wrap">
-        <span class="toggle"><input type="checkbox" id="opt-encode"/><span class="t-track"></span></span>
-        Encrypt URL
-      </label>
-    </div>
   </form>
 
 </main>
@@ -77,6 +58,9 @@
     <span>proxywarp.com</span>
   </span>
   <div class="links">
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+    <a href="donate.html">Donate</a>
     <a href="legal/terms.html">Terms</a>
     <a href="legal/privacy.html">Privacy</a>
     <a href="legal/dmca.html">DMCA</a>
@@ -84,31 +68,16 @@
 </footer>
 
 <script>
-  function go(e) {
-    e.preventDefault();
-    let raw = document.getElementById('url').value.trim();
-    if (!raw) return;
-
-    let url;
-    const looksLikeUrl = /^https?:\/\//i.test(raw) || /^[\w-]+\.[\w.]+/.test(raw);
-    if (looksLikeUrl) {
-      if (!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
-      url = raw;
-    } else {
-      url = 'https://duckduckgo.com/html/?q=' + encodeURIComponent(raw);
-    }
-
-    const enc     = document.getElementById('opt-encode').checked;
-    const encoded = enc ? btoa(url) : encodeURIComponent(url);
-    const p = new URLSearchParams({
-      url:     encoded,
-      enc:     enc ? '1' : '0',
-      cookies: document.getElementById('opt-cookies').checked ? '1' : '0',
-      scripts: document.getElementById('opt-scripts').checked ? '1' : '0',
-      ads:     document.getElementById('opt-ads').checked     ? '1' : '0',
-    });
-    window.location.href = 'proxy.html?' + p;
+document.getElementById('main-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var raw = document.getElementById('url').value.trim();
+  if (!raw) return;
+  if (!/^https?:\/\//i.test(raw)) {
+    if (/^[\w-]+\.[\w.]+/.test(raw)) raw = 'https://' + raw;
+    else raw = 'https://duckduckgo.com/html/?q=' + encodeURIComponent(raw);
   }
+  window.location.href = 'proxy.html?url=' + encodeURIComponent(raw);
+});
 </script>
 
 </body>

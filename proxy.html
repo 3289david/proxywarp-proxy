@@ -4,18 +4,165 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ProxyWarp</title>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css" />
-  <script src="https://js.puter.com/v2/"></script>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    /* ── Menu button & dropdown ── */
+    .menu-btn {
+      width: 28px; height: 28px;
+      border: 1px solid var(--border);
+      background: transparent;
+      border-radius: 4px;
+      color: var(--text-2);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      gap: 2px;
+      transition: all 0.12s;
+      flex-shrink: 0;
+    }
+    .menu-btn:hover { background: var(--bg-3); color: var(--text); border-color: var(--border-hi); }
+    .menu-btn.open  { background: var(--bg-3); color: var(--text); border-color: var(--border-hi); }
+    .menu-dot { width: 3px; height: 3px; border-radius: 50%; background: currentColor; }
+
+    .menu-panel {
+      display: none;
+      position: absolute;
+      top: 44px; right: 8px;
+      width: 200px;
+      background: var(--bg-2);
+      border: 1px solid var(--border-hi);
+      border-radius: 8px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      z-index: 200;
+      overflow: hidden;
+      animation: fadeIn 0.12s ease;
+    }
+    .menu-panel.open { display: block; }
+
+    @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+
+    .menu-section {
+      padding: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .menu-section:last-child { border-bottom: none; }
+
+    .menu-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 10px;
+      border-radius: 5px;
+      color: var(--text-2);
+      font-size: 12px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.1s;
+      border: none; background: none; width: 100%; text-align: left;
+      font-family: var(--font);
+    }
+    .menu-item:hover { background: var(--bg-3); color: var(--text); }
+    .menu-item-icon {
+      width: 20px; height: 20px;
+      border-radius: 4px;
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .menu-donate {
+      margin: 6px;
+      padding: 9px 12px;
+      background: linear-gradient(135deg, #f5c518 0%, #ffaa00 100%);
+      border-radius: 6px;
+      display: flex; align-items: center; gap: 8px;
+      color: #000;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .menu-donate:hover { opacity: 0.88; color: #000; }
+
+    .menu-status {
+      padding: 8px 10px;
+      font-size: 10px;
+      color: var(--text-3);
+      display: flex; align-items: center; gap: 5px;
+    }
+
+    /* ── Loader ── */
+    .loader-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    .loader-logo-mark {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: var(--bg-3);
+      border: 1px solid var(--border-hi);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+      animation: logoFloat 3s ease-in-out infinite;
+    }
+    @keyframes logoFloat {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-4px); }
+    }
+
+    .loader-ring {
+      position: relative;
+      width: 36px; height: 36px;
+      margin-bottom: 20px;
+    }
+    .loader-ring svg {
+      animation: spin 1.1s linear infinite;
+      width: 36px; height: 36px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .load-main-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 6px;
+      min-height: 20px;
+      transition: opacity 0.3s;
+      text-align: center;
+    }
+    .load-sub-text {
+      font-size: 11px;
+      color: var(--text-3);
+      min-height: 16px;
+      transition: opacity 0.3s;
+      text-align: center;
+    }
+
+    .loader-dots {
+      display: flex; gap: 5px; margin-top: 18px;
+    }
+    .ld {
+      width: 4px; height: 4px; border-radius: 50%;
+      background: var(--text-3);
+      animation: dotPulse 1.4s ease-in-out infinite;
+    }
+    .ld:nth-child(2) { animation-delay: 0.2s; }
+    .ld:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dotPulse {
+      0%,80%,100% { transform: scale(1); opacity: 0.3; }
+      40%          { transform: scale(1.5); opacity: 1; }
+    }
+  </style>
 </head>
 <body class="proxy-page">
 
-<!-- ── Chrome ── -->
-<div class="chrome">
+<div class="chrome" style="position:relative">
 
-  <a href="index.html" class="chrome-brand" title="Home">
+  <a href="/index.html" class="chrome-brand" title="Home">
     <svg width="13" height="13" viewBox="0 0 18 18" fill="none">
       <path d="M9 1L2 6v6l7 5 7-5V6L9 1z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
       <path d="M9 5v8M5.5 7l3.5 2 3.5-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -26,209 +173,278 @@
   <div class="chrome-divider"></div>
 
   <div class="nav-btns">
-    <button class="nb" id="btn-back" onclick="histBack()" title="Back" disabled>
-      <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-        <path d="M9 3L5 7l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+    <button class="nb" id="btn-back"    title="Back"    onclick="proxyBack()"    disabled>
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M9 3L5 7l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <button class="nb" id="btn-fwd" onclick="histForward()" title="Forward" disabled>
-      <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-        <path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+    <button class="nb" id="btn-fwd"     title="Forward" onclick="proxyForward()" disabled>
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <button class="nb" id="btn-refresh" onclick="doRefresh()" title="Reload">
-      <svg width="13" height="13" viewBox="0 0 14 14" fill="none" id="icon-refresh">
-        <path d="M11 7A4 4 0 113.5 3.8M3.5 7V3.5H7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+    <button class="nb" id="btn-refresh" title="Reload"  onclick="proxyRefresh()">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M11 7A4 4 0 113.5 3.8M3.5 7V3.5H7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
   </div>
 
   <div class="addr">
-    <span class="addr-lock" id="addr-lock">
+    <span class="addr-lock">
       <svg width="11" height="11" viewBox="0 0 13 13" fill="none">
         <rect x="2.5" y="5.5" width="8" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/>
         <path d="M4.5 5.5V4a2 2 0 014 0v1.5" stroke="currentColor" stroke-width="1.2"/>
       </svg>
     </span>
-    <input
-      type="text"
-      id="addr-input"
-      class="addr-input"
-      placeholder="Search or enter URL..."
-      autocomplete="off"
-      spellcheck="false"
-      onkeydown="if(event.key==='Enter') navigateTo()"
-    />
-    <button class="addr-go" onclick="navigateTo()" title="Go">
-      <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-        <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+    <input type="text" id="addr-input" class="addr-input"
+      placeholder="Search or enter URL…" autocomplete="off" spellcheck="false"/>
+    <button class="addr-go" onclick="navigateTo(document.getElementById('addr-input').value)" title="Go">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
   </div>
 
   <div class="chrome-right">
-    <button class="new-tab-btn" onclick="showNewTab()" title="New tab">
-      <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-        <path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-      </svg>
-    </button>
-
-    <button class="opts-toggle" id="btn-opts" onclick="toggleOpts()">
-      <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-        <circle cx="7" cy="7" r="1.8" stroke="currentColor" stroke-width="1.2"/>
-        <path d="M7 1.5V3M7 11v1.5M1.5 7H3M11 7h1.5M2.9 2.9l1.1 1.1M10 10l1.1 1.1M11.1 2.9L10 4M4 10l-1.1 1.1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-      </svg>
-      <span>Options</span>
-    </button>
-
-    <div class="status-pill" id="status-pill">
+    <div class="status-pill">
       <span class="dot dot-green"></span>
-      <span id="status-label">Protected</span>
+      <span>Protected</span>
+    </div>
+
+    <!-- Menu button -->
+    <button class="menu-btn" id="menu-btn" title="Menu" onclick="toggleMenu()">
+      <span class="menu-dot"></span>
+      <span class="menu-dot"></span>
+      <span class="menu-dot"></span>
+    </button>
+  </div>
+
+  <!-- Dropdown menu -->
+  <div class="menu-panel" id="menu-panel">
+    <div class="menu-section">
+      <a class="menu-item" href="/index.html">
+        <span class="menu-item-icon">
+          <svg width="11" height="11" viewBox="0 0 18 18" fill="none"><path d="M9 1L2 6v6l7 5 7-5V6L9 1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </span>
+        Home
+      </a>
+      <a class="menu-item" href="/about.html" target="_blank">
+        <span class="menu-item-icon">
+          <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M7 6.5v3.5M7 4.5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </span>
+        About ProxyWarp
+      </a>
+      <a class="menu-item" href="/contact.html" target="_blank">
+        <span class="menu-item-icon">
+          <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="3" width="11" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 5l5.5 3.5L12.5 5" stroke="currentColor" stroke-width="1.2"/></svg>
+        </span>
+        Contact Us
+      </a>
+    </div>
+    <a class="menu-donate" href="/donate.html" target="_blank">
+      <span style="font-size:15px">☕</span>
+      Support ProxyWarp
+    </a>
+    <div class="menu-section">
+      <div class="menu-status">
+        <span class="dot dot-green"></span>
+        Secure proxy active · IP hidden
+      </div>
     </div>
   </div>
 
 </div>
 
-<!-- ── Options drawer ── -->
-<div class="opts-drawer" id="opts-drawer">
-  <div class="opts-group">
-    <div class="opts-label">Privacy</div>
-    <label class="toggle-wrap">
-      <span class="toggle"><input type="checkbox" id="opt-cookies"/><span class="t-track"></span></span>
-      Allow cookies
-    </label>
-    <label class="toggle-wrap">
-      <span class="toggle"><input type="checkbox" id="opt-referrer"/><span class="t-track"></span></span>
-      Send referrer
-    </label>
-  </div>
-  <div class="opts-group">
-    <div class="opts-label">Content</div>
-    <label class="toggle-wrap">
-      <span class="toggle"><input type="checkbox" id="opt-scripts" checked/><span class="t-track"></span></span>
-      Enable scripts
-    </label>
-    <label class="toggle-wrap">
-      <span class="toggle"><input type="checkbox" id="opt-ads"/><span class="t-track"></span></span>
-      Block ads
-    </label>
-    <label class="toggle-wrap">
-      <span class="toggle"><input type="checkbox" id="opt-images" checked/><span class="t-track"></span></span>
-      Load images
-    </label>
-  </div>
-  <div class="opts-group">
-    <div class="opts-label">Identity</div>
-    <label class="toggle-wrap">
-      <span class="toggle"><input type="checkbox" id="opt-ua"/><span class="t-track"></span></span>
-      Spoof user-agent
-    </label>
-    <label class="toggle-wrap">
-      <span class="toggle"><input type="checkbox" id="opt-encode"/><span class="t-track"></span></span>
-      Encrypt URL
-    </label>
-  </div>
-  <div class="opts-group">
-    <div class="opts-label">Cloud</div>
-    <button class="opts-action" onclick="savePrefs()">Save to Puter cloud</button>
-    <button class="opts-action" onclick="clearHist()">Clear history</button>
-  </div>
-</div>
-
-<!-- ── Main ── -->
 <div class="proxy-main">
+  <div class="overlay" id="loading" style="display:flex;position:fixed;inset:0;z-index:100;background:#080808">
+    <div class="loader-wrap">
 
-  <!-- New tab / search -->
-  <div class="newtab" id="newtab">
-    <div class="newtab-time" id="nt-time">00:00</div>
-    <div class="newtab-date" id="nt-date"></div>
-
-    <form class="newtab-search" onsubmit="ntSearch(event)">
-      <span class="newtab-search-icon">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/>
-          <path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      <div class="loader-logo-mark">
+        <svg width="20" height="20" viewBox="0 0 18 18" fill="none">
+          <path d="M9 1L2 6v6l7 5 7-5V6L9 1z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M9 5v8M5.5 7l3.5 2 3.5-2" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-      </span>
-      <input
-        type="text"
-        id="nt-input"
-        class="newtab-input"
-        placeholder="Search or enter a URL..."
-        autocomplete="off"
-        spellcheck="false"
-      />
-      <button type="submit" class="newtab-go">
-        Go
-        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-          <path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </div>
+
+      <div class="loader-ring">
+        <svg viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="18" r="15" stroke="rgba(255,255,255,0.07)" stroke-width="2.5"/>
+          <path d="M18 3 A15 15 0 0 1 33 18" stroke="rgba(255,255,255,0.45)" stroke-width="2.5" stroke-linecap="round"/>
         </svg>
-      </button>
-    </form>
+      </div>
 
-    <div class="newtab-quick">
-      <button class="nq-btn" onclick="ntNav('https://duckduckgo.com')">DuckDuckGo</button>
-      <button class="nq-btn" onclick="ntNav('https://wikipedia.org')">Wikipedia</button>
-      <button class="nq-btn" onclick="ntNav('https://reddit.com')">Reddit</button>
-      <button class="nq-btn" onclick="ntNav('https://news.ycombinator.com')">Hacker News</button>
-      <button class="nq-btn" onclick="ntNav('https://github.com')">GitHub</button>
-    </div>
+      <div class="load-main-text" id="load-main">Connecting to proxy…</div>
+      <div class="load-sub-text"  id="load-sub">Your IP address is hidden</div>
 
-    <div class="newtab-footer">
-      <span class="dot dot-dim"></span>
-      IP hidden
-      <span class="newtab-sep">·</span>
-      No logs
-      <span class="newtab-sep">·</span>
-      <a href="https://puter.com" target="_blank" rel="noopener" style="color:var(--text-3);text-decoration:none">Puter</a>
+      <div class="loader-dots">
+        <span class="ld"></span><span class="ld"></span><span class="ld"></span>
+      </div>
+
     </div>
   </div>
 
-  <!-- Loading -->
-  <div class="overlay" id="loading" style="display:none">
-    <div class="spinner"></div>
-    <div class="load-text" id="load-text">Fetching...</div>
-    <div class="load-sub">Routed via Puter — IP hidden</div>
-  </div>
-
-  <!-- Error -->
-  <div class="overlay" id="err-screen" style="display:none">
-    <div class="err-title" id="err-title">Could not load page</div>
-    <div class="err-msg"   id="err-msg"></div>
-    <div class="err-btns">
-      <button class="btn" onclick="doRefresh()">Retry</button>
-      <button class="btn" onclick="showNewTab()">New tab</button>
-    </div>
-  </div>
-
-  <!-- Proxy iframe -->
   <iframe
     id="proxy-frame"
     class="proxy-frame"
+    style="display:none;width:100%;height:100%;border:none"
     sandbox="allow-same-origin allow-forms allow-popups allow-scripts allow-downloads"
     referrerpolicy="no-referrer"
     title="ProxyWarp"
   ></iframe>
-
 </div>
 
-<!-- ── Status bar ── -->
 <div class="status-bar">
-  <div class="sb-l">
-    <span id="sb-domain">New tab</span>
-  </div>
-  <div class="sb-r">
-    <span class="sb-puter">
-      <svg width="10" height="10" viewBox="0 0 18 18" fill="none">
-        <path d="M9 1L2 6v6l7 5 7-5V6L9 1z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-      </svg>
-      <span id="sb-user">Puter</span>
-    </span>
-    <span id="sb-time"></span>
-  </div>
+  <div class="sb-l"><span id="sb-domain">—</span></div>
+  <div class="sb-r"><span id="sb-time"></span></div>
 </div>
 
-<script src="js/proxy-engine.js"></script>
-<script src="js/proxy-ui.js"></script>
+<script>
+var frame   = document.getElementById('proxy-frame');
+var loading = document.getElementById('loading');
+var history_stack = [];
+var history_idx   = -1;
+
+// ── Rotating loader messages ──────────────────────────────────────
+var LOAD_MAIN = [
+  'Connecting to proxy…',
+  'Routing your request…',
+  'Fetching page content…',
+  'Rewriting links for privacy…',
+  'Loading resources…',
+  'Hiding your IP address…',
+  'Securing your connection…',
+  'Bypassing restrictions…',
+  'Almost there…',
+  'Preparing the page…',
+  'Encrypting traffic…',
+  'Checking for content…',
+];
+var LOAD_SUB = [
+  'Your IP address is hidden from all sites',
+  'Accessing the open web privately',
+  'Your identity is fully protected',
+  'ProxyWarp keeps your browsing private',
+  'Zero-knowledge browsing enabled',
+  'Unrestricted access to any site',
+  'Connection secured end-to-end',
+];
+var loadMainIdx = 0;
+var loadSubIdx  = 0;
+var loaderInterval = null;
+
+function startLoaderMessages() {
+  var mainEl = document.getElementById('load-main');
+  var subEl  = document.getElementById('load-sub');
+  loaderInterval = setInterval(function() {
+    mainEl.style.opacity = '0';
+    subEl.style.opacity  = '0';
+    setTimeout(function() {
+      loadMainIdx = (loadMainIdx + 1) % LOAD_MAIN.length;
+      loadSubIdx  = (loadSubIdx  + 1) % LOAD_SUB.length;
+      mainEl.textContent = LOAD_MAIN[loadMainIdx];
+      subEl.textContent  = LOAD_SUB[loadSubIdx];
+      mainEl.style.opacity = '1';
+      subEl.style.opacity  = '1';
+    }, 280);
+  }, 2000);
+}
+function stopLoaderMessages() {
+  if (loaderInterval) { clearInterval(loaderInterval); loaderInterval = null; }
+}
+
+// ── Menu toggle ────────────────────────────────────────────────────
+function toggleMenu() {
+  var btn   = document.getElementById('menu-btn');
+  var panel = document.getElementById('menu-panel');
+  var open  = panel.classList.toggle('open');
+  btn.classList.toggle('open', open);
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#menu-btn') && !e.target.closest('#menu-panel')) {
+    document.getElementById('menu-panel').classList.remove('open');
+    document.getElementById('menu-btn').classList.remove('open');
+  }
+});
+
+// ── Clock ──────────────────────────────────────────────────────────
+setInterval(function() {
+  var d = new Date();
+  document.getElementById('sb-time').textContent =
+    String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}, 1000);
+
+// ── URL handling ───────────────────────────────────────────────────
+function resolveUrl(raw) {
+  raw = (raw || '').trim();
+  if (!raw) return null;
+  if (!/^https?:\/\//i.test(raw)) {
+    if (/^[\w-]+\.[\w.]+/.test(raw)) raw = 'https://' + raw;
+    else return 'https://duckduckgo.com/html/?q=' + encodeURIComponent(raw);
+  }
+  return raw;
+}
+
+function setAddr(url) {
+  document.getElementById('addr-input').value = url || '';
+  try { document.getElementById('sb-domain').textContent = new URL(url).hostname; }
+  catch(_) { document.getElementById('sb-domain').textContent = url || '—'; }
+  document.getElementById('btn-back').disabled = history_idx <= 0;
+  document.getElementById('btn-fwd').disabled  = history_idx >= history_stack.length - 1;
+}
+
+function loadUrl(url, push) {
+  if (!url) return;
+  var proxyUrl = '/p/' + url;
+  if (push !== false) {
+    history_stack = history_stack.slice(0, history_idx + 1);
+    history_stack.push(url);
+    history_idx++;
+  }
+  setAddr(url);
+  loading.style.display = 'flex';
+  frame.style.display   = 'none';
+  startLoaderMessages();
+  frame.src = proxyUrl;
+}
+
+frame.addEventListener('load', function() {
+  stopLoaderMessages();
+  loading.style.display = 'none';
+  frame.style.display   = 'block';
+  try {
+    var fUrl = frame.contentWindow.location.href;
+    if (fUrl && fUrl !== 'about:blank') {
+      var m = fUrl.match(/\/p\/(.+)$/);
+      if (m) setAddr(m[1]);
+    }
+  } catch(_) {}
+});
+
+function navigateTo(raw) {
+  var url = resolveUrl(raw);
+  if (url) loadUrl(url);
+}
+
+function proxyBack() {
+  if (history_idx > 0) { history_idx--; loadUrl(history_stack[history_idx], false); }
+}
+function proxyForward() {
+  if (history_idx < history_stack.length - 1) { history_idx++; loadUrl(history_stack[history_idx], false); }
+}
+function proxyRefresh() {
+  if (history_stack[history_idx]) loadUrl(history_stack[history_idx], false);
+}
+
+document.getElementById('addr-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') navigateTo(this.value);
+});
+
+// ── Initial load ───────────────────────────────────────────────────
+var initUrl = new URLSearchParams(location.search).get('url');
+if (initUrl) {
+  loadUrl(initUrl);
+} else {
+  loading.style.display = 'none';
+  frame.style.display   = 'block';
+  frame.src = '/p/https://duckduckgo.com/html/';
+  history_stack.push('https://duckduckgo.com/html/');
+  history_idx = 0;
+  setAddr('https://duckduckgo.com');
+}
+</script>
+
 </body>
 </html>
