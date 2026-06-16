@@ -179,7 +179,7 @@ body.proxy-page {
   align-items: center;
   gap: 6px;
   padding: 0 8px;
-  background: var(--bg-2);
+  background: var(--bg);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   z-index: 50;
@@ -251,13 +251,14 @@ body.proxy-page {
   background: none;
   border: none;
   outline: none;
-  color: var(--text);
+  color: #f0f0f0;
+  -webkit-text-fill-color: #f0f0f0;
   font-size: 12px;
   font-family: var(--mono);
   min-width: 0;
 }
 
-.addr-input::placeholder { color: var(--text-3); }
+.addr-input::placeholder { color: rgba(240,240,240,0.3); -webkit-text-fill-color: rgba(240,240,240,0.3); }
 
 .addr-go {
   background: none;
@@ -529,7 +530,7 @@ body.proxy-page {
   align-items: center;
   justify-content: space-between;
   padding: 0 12px;
-  background: var(--bg-2);
+  background: var(--bg);
   border-top: 1px solid var(--border);
   flex-shrink: 0;
 }
